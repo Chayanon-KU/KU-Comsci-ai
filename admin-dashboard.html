@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Users Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #1f1f1f;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #1a4d2e;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #b71c1c;
+        }
+
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #1a4d2e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.google {
+            background-color: #e8f5e9;
+            color: #1a4d2e;
+        }
+
+        .badge.manual {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a4d2e;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .stat-card .number {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>Admin Dashboard</h1>
+                <p>ระบบจัดการผู้ใช้ - KU COMSCI AI Chat</p>
+            </div>
+            <div class="header-right">
+                <button class="logout-btn" onclick="handleLogout()">ออกจากระบบ</button>
+            </div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>จำนวนผู้ใช้ทั้งหมด</h3>
+                <div class="number" id="totalUsers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Google Login</h3>
+                <div class="number" id="googleUsers">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Manual Login</h3>
+                <div class="number" id="manualUsers">-</div>
+            </div>
+        </div>
+
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div class="table-container">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ชื่อ</th>
+                        <th>อีเมล</th>
+                        <th>วิธีเข้าสู่ระบบ</th>
+                        <th>สมัครสมาชิก</th>
+                        <th>เข้าสู่ระบบครั้งล่าสุด</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="loading">
+                        <td colspan="6">กำลังโหลดข้อมูล...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function loadUsers() {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/users');
+                const data = await response.json();
+
+                if (!data.success) {
+                    showError('ไม่สามารถโหลดข้อมูล: ' + data.error);
+                    return;
+                }
+
+                displayUsers(data.users);
+                displayStats(data.users);
+            } catch (error) {
+                showError('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        function handleLogout() {
+            const confirmed = confirm('แน่ใจหรือว่าต้องการออกจากระบบ?');
+            if (confirmed) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                alert('ออกจากระบบแล้ว');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function displayUsers(users) {
+            const tableBody = document.getElementById('tableBody');
+            
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">ยังไม่มีผู้ใช้</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="badge ${user.loginMethod}">
+                            ${user.loginMethod === 'google' ? '🔵 Google' : '📝 Manual'}
+                        </span>
+                    </td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>${user.lastLogin ? formatDate(user.lastLogin) : 'ไม่เคยเข้า'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function displayStats(users) {
+            const total = users.length;
+            const google = users.filter(u => u.loginMethod === 'google').length;
+            const manual = users.filter(u => u.loginMethod === 'manual').length;
+
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('googleUsers').textContent = google;
+            document.getElementById('manualUsers').textContent = manual;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Load users on page load
+        loadUsers();
+
+        // Refresh every 30 seconds
+        setInterval(loadUsers, 30000);
+    </script>
+</body>
+</html>
