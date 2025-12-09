@@ -1,0 +1,210 @@
+:root {
+    /* กำหนดธีมสีเขียวเข้ม + ขาว */
+    --primary-green: #1a4d2e; /* เขียวเข้ม (Header/User Bubble) */
+    --accent-green: #e8f5e9;  /* เขียวอ่อน (Background/AI Bubble) */
+    --text-dark: #1f1f1f;
+    --bg-color: #ffffff;
+    --sidebar-width: 280px;
+}
+
+body {
+    font-family: 'Google Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    display: flex;
+    height: 100vh;
+    color: var(--text-dark);
+}
+
+/* --- Sidebar (เหมือน Gemini) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: #f0f2f0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    display: none; /* ซ่อนในมือถือ หรือเปิดถ้าต้องการ */
+}
+
+@media (min-width: 768px) {
+    .sidebar { display: flex; }
+}
+
+.new-chat-btn {
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s;
+}
+
+.new-chat-btn:hover {
+    box-shadow: 0 4px 8px rgba(26, 77, 46, 0.2);
+}
+
+/* --- Main Chat Area --- */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    max-width: 100%;
+}
+
+/* Top Bar */
+.top-bar {
+    padding: 15px 20px;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--primary-green);
+}
+
+/* Chat Container */
+#chat-container {
+    flex: 1;
+    padding: 20px 20%; /* เว้นขอบซ้ายขวาให้ดูคล้าย Gemini */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    #chat-container { padding: 20px 5%; }
+}
+
+/* Bubbles */
+.message {
+    display: flex;
+    gap: 15px;
+    line-height: 1.6;
+    animation: fadeIn 0.3s ease;
+}
+
+.message.user {
+    flex-direction: row-reverse;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.user .avatar {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.ai .avatar {
+    background-color: #e0e0e0; /* ไอคอน AI */
+    /*background-image: url('https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg'); */
+    background-size: cover;
+}
+
+.bubble {
+    padding: 12px 20px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user .bubble {
+    background-color: var(--accent-green);
+    color: var(--text-dark);
+    border-top-right-radius: 4px;
+}
+
+.ai .bubble {
+    background-color: transparent; /* AI ของ Gemini มักจะไม่มีพื้นหลัง bubble ชัดเจน เน้น text */
+    padding-left: 0;
+}
+
+/* --- Input Area --- */
+.input-area {
+    padding: 20px 20%;
+    padding-bottom: 30px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1) 40%);
+}
+
+@media (max-width: 768px) {
+    .input-area { padding: 20px 5%; }
+}
+
+.input-box {
+    background-color: #f0f4f9;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    transition: 0.2s;
+    border: 1px solid transparent;
+}
+
+.input-box:focus-within {
+    background-color: white;
+    border-color: var(--primary-green);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    outline: none;
+    padding: 10px;
+    font-family: 'Google Sans', sans-serif;
+}
+
+button#send-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button#send-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+/* Loading Animation */
+.typing-indicator {
+    display: inline-block;
+    font-style: italic;
+    color: #888;
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* จัดการ Markdown content */
+.markdown-content p { margin-top: 0; }
+.markdown-content pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}

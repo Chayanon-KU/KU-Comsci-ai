@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comsci ai chat DEMO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="comsci-ai-chat-demo.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="auth-handler.js"></script>
+</head>
+<body>
+
+    <div class="sidebar">
+        <button class="new-chat-btn">
+            <span>+</span> New Chat
+        </button>
+        <div style="margin-top: 20px; color: #666; font-size: 14px;">Recent</div>
+        <div style="margin-top: 10px; padding: 10px; border-radius: 8px; cursor: pointer; hover:bg-gray-200;">
+            Project KU AI...
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">KU COMSCI AI Assistant</div>
+        
+        <div id="chat-container">
+            <div class="message ai">
+                <div class="avatar"></div>
+                <div class="bubble markdown-content">สวัสดีครับ! ผมคือ AI สำหรับให้ข้อมูลต่าง ๆ ของสาขาวิชาวิทยาการคอมพิวเตอร์ มีอะไรให้ช่วยวันนี้ครับ?</div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-box">
+                <input type="text" id="user-input" placeholder="ป้อนคำสั่งที่นี่..." autocomplete="off">
+                <button id="send-btn">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+            <div style="text-align: center; font-size: 12px; color: #888; margin-top: 10px;">
+                KU Style UI connected to n8n Workflow
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Authentication Setup ---
+        const authHandler = new AuthHandler();
+        authHandler.init();
+
+        // --- การตั้งค่า Configuration ---
+        // ใส่ URL ของ n8n Webhook ของคุณที่นี่ (ต้องเป็น Method POST)
+        const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/417c204e-0287-4ac5-88d1-3af5d7920ae1';
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // ฟังก์ชันส่งข้อความ
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. แสดงข้อความ User
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            // 2. แสดงสถานะกำลังพิมพ์ (Loading)
+            const loadingId = addLoading();
+
+            try {
+                // 3. ส่งข้อมูลไป n8n
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ chatInput: text })
+                });
+
+                const data = await response.json();
+                
+                // ลบ Loading
+                removeMessage(loadingId);
+
+                // 4. แสดงผลลัพธ์จาก AI (คาดหวังว่า n8n จะส่งกลับมาเป็น { output: "ข้อความ..." })
+                // ปรับ key 'output' ให้ตรงกับ JSON ที่ออกจาก n8n node สุดท้าย
+                const aiResponse = data.output || data.text || JSON.stringify(data);
+                addMessage(aiResponse, 'ai');
+
+            } catch (error) {
+                removeMessage(loadingId);
+                addMessage('เกิดข้อผิดพลาดในการเชื่อมต่อกับ n8n: ' + error.message, 'ai');
+            }
+        }
+
+        // ฟังก์ชันเพิ่ม Bubble ข้อความในหน้าจอ
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            
+            // ใช้ Marked.js แปลง Markdown เป็น HTML ถ้าเป็น AI
+            const content = sender === 'ai' ? marked.parse(text) : text;
+
+            div.innerHTML = `
+                <div class="avatar">${sender === 'user' ? 'U' : ''}</div>
+                <div class="bubble markdown-content">${content}</div>
+            `;
+            chatContainer.appendChild(div);
+            scrollToBottom();
+            return div.id = 'msg-' + Date.now();
+        }
+
+        function addLoading() {
+            const div = document.createElement('div');
+            div.className = 'message ai';
+            div.innerHTML = `
+                <div class="avatar"></div>
+                <div class="bubble"><span class="typing-indicator">กำลังประมวลผล...</span></div>
+            `;
+            chatContainer.appendChild(div);
+            scrollToBottom();
+            return div.id = 'loading-' + Date.now();
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

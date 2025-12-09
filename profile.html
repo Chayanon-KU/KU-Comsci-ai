@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - KU COMSCI AI Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background: linear-gradient(135deg, #1a4d2e 0%, #2d7a5a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            object-fit: cover;
+            border: 4px solid #1a4d2e;
+        }
+
+        .header h1 {
+            color: #1a4d2e;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .profile-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .profile-item {
+            margin-bottom: 15px;
+        }
+
+        .profile-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .profile-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .profile-value {
+            font-size: 16px;
+            color: #1f1f1f;
+            word-break: break-all;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a4d2e;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #1a4d2e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f3821;
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1565c0;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            color: #1565c0;
+            margin: 0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-danger {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img id="avatar" class="avatar" src="" alt="Avatar">
+            <h1 id="userName">Loading...</h1>
+            <p id="userEmail">-</p>
+        </div>
+
+        <div class="profile-section">
+            <div class="profile-item">
+                <div class="profile-label">ชื่อผู้ใช้</div>
+                <div class="profile-value" id="fullName">-</div>
+            </div>
+            <div class="profile-item">
+                <div class="profile-label">อีเมล</div>
+                <div class="profile-value" id="emailValue">-</div>
+            </div>
+            <div class="profile-item">
+                <div class="profile-label">ID ผู้ใช้</div>
+                <div class="profile-value" id="userId" style="font-size: 12px; font-family: monospace;">-</div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">สถานะการเข้าสู่ระบบ</div>
+                <div class="profile-value" id="loginStatus">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">เข้าสู่ระบบล่าสุด</div>
+                <div class="profile-value" id="lastLogin" style="font-size: 12px;">-</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="goToChat()">กลับไปแชท</button>
+            <button class="btn btn-danger" onclick="handleLogout()">ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <script>
+        async function loadProfile() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+                if (!token || !user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // แสดงข้อมูลพื้นฐาน
+                document.getElementById('avatar').src = user.picture || 'https://via.placeholder.com/80';
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('fullName').textContent = user.name;
+                document.getElementById('emailValue').textContent = user.email;
+                document.getElementById('userId').textContent = user.id;
+                document.getElementById('loginStatus').textContent = 'Active';
+
+                // ดึงข้อมูลเพิ่มเติมจากเซิร์ฟเวอร์
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const userDetails = data.user;
+                        document.getElementById('lastLogin').textContent = new Date().toLocaleDateString('th-TH');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        function handleLogout() {
+            const confirmed = confirm('แน่ใจหรือว่าต้องการออกจากระบบ?');
+            if (confirmed) {
+                const token = localStorage.getItem('authToken');
+                
+                // ส่งการร้องขออล็อกเอาต์ไปยังเซิร์ฟเวอร์
+                fetch('http://localhost:5000/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(err => console.error('Logout error:', err));
+
+                // ลบข้อมูล
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                
+                alert('ออกจากระบบแล้ว ยินดีที่ได้ใช้บริการ!');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function goToChat() {
+            window.location.href = 'comsci-ai-chat-demo.html';
+        }
+
+        function goToAdmin() {
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        // Load profile on page load
+        window.addEventListener('load', loadProfile);
+    </script>
+</body>
+</html>
